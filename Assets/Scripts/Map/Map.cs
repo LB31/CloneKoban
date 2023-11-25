@@ -13,7 +13,7 @@ namespace Map
         public static Map Instance { get; private set; }
         public IObstacle[,] map;
         private Dictionary<IObstacle.Type, TileBase> tileLookup;
-        
+        private Dictionary<Player, Vector3Int> playerCoordinates;
         
         private void Awake()
         {
@@ -43,11 +43,16 @@ namespace Map
                             tileLookup.TryAdd(IObstacle.Type.Player, tile);
                             Player newPlayer = new Player();
                             map[y, x] = newPlayer;
+                            playerCoordinates.Add(newPlayer, new Vector3Int(x, y));
                             PlayerMover.Instance.AllPlayers.Add(newPlayer);
                             break;
                     }
                 }
             }
+        }
+
+        public void MoveAllPlayers()
+        {
         }
 
         public void MoveObstacle(IObstacle obstacle, Vector3Int from, Vector3Int to)
