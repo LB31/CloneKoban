@@ -14,6 +14,7 @@ namespace Map
         public IObstacle[,] map;
         private Dictionary<IObstacle.Type, TileBase> tileLookup;
         private Dictionary<Player, Vector3Int> playerCoordinates;
+        private Dictionary<Goal, Vector3Int> goalCoordinates;
         
         private void Awake()
         {
@@ -39,6 +40,12 @@ namespace Map
                             tileLookup.TryAdd(IObstacle.Type.Box, tile);
                             map[y, x] = new Box();
                             break;
+                        case "Goal":
+                            tileLookup.TryAdd(IObstacle.Type.Goal, tile);
+                            Goal goal = new Goal();
+                            map[y, x] = goal;
+                            goalCoordinates.Add(goal, new Vector3Int(x, y));
+                            break;
                         case "Player":
                             tileLookup.TryAdd(IObstacle.Type.Player, tile);
                             Player newPlayer = new Player();
@@ -59,6 +66,18 @@ namespace Map
         {
             tilemap.SetTile(from, null);
             tilemap.SetTile(to, tileLookup[obstacle.GetType()]);
+        }
+
+        public bool CheckIfAllGoalsReached()
+        {
+            bool win = false;
+
+            foreach (Vector3Int item in goalCoordinates.Values)
+            {
+                win = map[item.x, item.y].Equals(IObstacle.Type.Box);
+            }
+
+            return win;
         }
     }
 }
