@@ -93,7 +93,7 @@ namespace Map
         {
             Vector3Int goalCoord = CalculateGoalCoordinate(player.NextMove, coordinate);
 
-            if (goalCoord != coordinate && map[goalCoord.y, goalCoord.x] == null)
+            if (goalCoord != coordinate && (map[goalCoord.y, goalCoord.x] == null || map[goalCoord.y, goalCoord.x].GetType() == IObstacle.Type.Goal))
             {
                 MoveObstacle(player, coordinate, goalCoord);
             }
@@ -104,13 +104,13 @@ namespace Map
             switch (direction)
             {
                 case MoveDirection.TOP:
-                    return new Vector3Int(currentCoord.y - 1, currentCoord.x);
+                    return new Vector3Int(currentCoord.x, currentCoord.y - 1);
                 case MoveDirection.RIGHT:
-                    return new Vector3Int(currentCoord.y, currentCoord.x + 1);
+                    return new Vector3Int(currentCoord.x + 1, currentCoord.y);
                 case MoveDirection.DOWN:
-                    return new Vector3Int(currentCoord.y + 1, currentCoord.x);
+                    return new Vector3Int(currentCoord.x, currentCoord.y + 1);
                 case MoveDirection.LEFT:
-                    return new Vector3Int(currentCoord.y, currentCoord.x - 1);
+                    return new Vector3Int(currentCoord.x - 1, currentCoord.y);
                 case MoveDirection.NONE:
                 default:
                     return currentCoord; // Return the original coordinate if no movement is needed
