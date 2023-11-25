@@ -52,6 +52,7 @@ public class PlayerMover : Singleton<PlayerMover>
         {
             player.CalcNextMove();
         }
+        MapReference.MoveAllPlayers();
         //StartCoroutine(MovePlayer(movement));
     }
 
