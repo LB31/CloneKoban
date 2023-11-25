@@ -48,10 +48,11 @@ public class PlayerMover : Singleton<PlayerMover>
 
         PathsSoFar.Add(nextMove);
 
-        foreach (Player player in AllPlayers)
+        foreach (var player in AllPlayers)
         {
             player.CalcNextMove();
         }
+        MapReference.MoveAllPlayers();
         //StartCoroutine(MovePlayer(movement));
     }
 
