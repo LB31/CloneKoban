@@ -58,7 +58,6 @@ public class ManagerUI : MonoBehaviour
 
     private void OnCancel(InputValue value)
     {
-        Debug.Log(value.isPressed);
         Menu.SetActive(!Menu.activeSelf);
         RestartButton.SetActive(!Menu.activeSelf);
     }
