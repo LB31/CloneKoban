@@ -48,7 +48,7 @@ public class PlayerMover : Singleton<PlayerMover>
 
         PathsSoFar.Add(nextMove);
 
-        foreach (var player in AllPlayers)
+        foreach (Player player in AllPlayers)
         {
             player.CalcNextMove();
         }

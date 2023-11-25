@@ -9,7 +9,9 @@ namespace Map
 {
     public class Map : MonoBehaviour
     {
-        public Tilemap tilemap;
+        public List<Tilemap> tilemaps = new();
+        public int CurrentTilemap = 0;
+
         public static Map Instance { get; private set; }
         public IObstacle[,] map;
         private Dictionary<IObstacle.Type, TileBase> tileLookup;
@@ -19,15 +21,19 @@ namespace Map
         private void Awake()
         {
             Instance ??= this;
+
+            //PrepareMap(0);
         }
 
-        private void Start()
+        public void PrepareMap(int index)
         {
+            CurrentTilemap = index;
+
             PlayerMover.Instance.AllPlayers = new List<Player>();
             playerCoordinates = new();
             goalCoordinates = new ();
             tileLookup = new ();
-            var bounds = tilemap.cellBounds;
+            var bounds = tilemaps[CurrentTilemap].cellBounds;
             int maxX = bounds.min.x < 0 ? bounds.max.x + Math.Abs(bounds.min.x) : bounds.max.x - bounds.min.x;
             int maxY = bounds.min.y < 0 ? bounds.max.y + Math.Abs(bounds.min.y) : bounds.max.y - bounds.min.y;
             map = new IObstacle[maxY, maxX];
@@ -36,7 +42,7 @@ namespace Map
             {
                 for (int x = 0; x < maxX; x++) 
                 {
-                    var tile = tilemap.GetTile(tileMapCoord);
+                    var tile = tilemaps[CurrentTilemap].GetTile(tileMapCoord);
                     if (tile == null)
                     {
                         tileMapCoord.x += 1;
@@ -114,11 +120,19 @@ namespace Map
 
         public void MoveObstacle(IObstacle obstacle, Vector3Int from, Vector3Int to)
         {
-            tilemap.SetTile(from, null);
-            tilemap.SetTile(to, tileLookup[obstacle.GetType()]);
+            tilemaps[CurrentTilemap].SetTile(from, null);
+            tilemaps[CurrentTilemap].SetTile(to, tileLookup[obstacle.GetType()]);
             if (obstacle is Player player)
             {
                 playerCoordinates[player] = to;
+            }
+        }
+
+        private void CheckIfBoxInFront(Vector3Int to)
+        {
+            if(map[to.y, to.x].Equals(IObstacle.Type.Box) || map[to.y, to.x].Equals(IObstacle.Type.Player))
+            {
+                //MoveObstacle(map[to.y, to.x], );
             }
         }
 
