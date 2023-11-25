@@ -23,25 +23,27 @@ namespace Map
 
         private void Start()
         {
-            tileLookup = new Dictionary<IObstacle.Type, TileBase>();
+            playerCoordinates = new();
+            goalCoordinates = new ();
+            tileLookup = new ();
             var bounds = tilemap.cellBounds;
             int maxX = bounds.min.x < 0 ? bounds.max.x + Math.Abs(bounds.min.x) : bounds.max.x - bounds.min.x;
             int maxY = bounds.min.y < 0 ? bounds.max.y + Math.Abs(bounds.min.y) : bounds.max.y - bounds.min.y;
             map = new IObstacle[maxY, maxX];
-            Vector3Int tileMapCoord = Vector3Int.zero;
+            Vector3Int tileMapCoord = bounds.min;
             for (int y = 0; y < maxY; y++)
             {
-                tileMapCoord.y += bounds.min.y;
                 for (int x = 0; x < maxX; x++) 
                 {
-                    tileMapCoord.x += bounds.min.x;
                     var tile = tilemap.GetTile(tileMapCoord);
                     if (tile == null)
                     {
                         tileMapCoord.x += 1;
                         continue;
                     }
-                    switch (tile.name)
+
+                    var args = tile.name.Split('_');
+                    switch (args[0])
                     {
                         case "wall":
                             tileLookup.TryAdd(IObstacle.Type.Wall, tile);
@@ -51,7 +53,7 @@ namespace Map
                             tileLookup.TryAdd(IObstacle.Type.Box, tile);
                             map[y, x] = new Box();
                             break;
-                        case "Goal":
+                        case "goal":
                             tileLookup.TryAdd(IObstacle.Type.Goal, tile);
                             Goal goal = new Goal();
                             map[y, x] = goal;
@@ -59,7 +61,7 @@ namespace Map
                             break;
                         case "player":
                             tileLookup.TryAdd(IObstacle.Type.Player, tile);
-                            Player newPlayer = new Player();
+                            Player newPlayer = new Player(args.Length == 2 ? int.Parse(args[1]) : 1);
                             map[y, x] = newPlayer;
                             playerCoordinates.Add(newPlayer, new Vector3Int(x, y));
                             PlayerMover.Instance.AllPlayers.Add(newPlayer);
