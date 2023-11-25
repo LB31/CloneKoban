@@ -7,16 +7,29 @@ using UnityEngine.SceneManagement;
 public class ManagerUI : MonoBehaviour
 {
     public List<GameObject> Levels = new();
+    public GameObject StartScreen;
     public GameObject Menu;
     public GameObject RestartButton;
-    
+
 
     private int startIndex = 0;
 
     private void Start()
     {
-        ActivateLevel(startIndex++);
+        StartScreen.SetActive(true);
         Menu.SetActive(false);
+        RestartButton.SetActive(false);
+
+        ActivateLevel(-1);
+    }
+
+    public void StartGame()
+    {
+        StartScreen.SetActive(false);
+        Menu.SetActive(false);
+        RestartButton.SetActive(true);
+
+        ActivateLevel(startIndex++);
     }
 
     public void NextLevel()
@@ -39,7 +52,8 @@ public class ManagerUI : MonoBehaviour
             item.SetActive(false);
         }
 
-        Levels[index].SetActive(true);
+        if (index != -1)
+            Levels[index].SetActive(true);
     }
 
     private void OnCancel(InputValue value)
