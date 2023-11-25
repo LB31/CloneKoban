@@ -7,6 +7,11 @@ namespace Obstacle
         public int delay = 1;
         public MoveDirection NextMove;
 
+        public Player(int delay)
+        {
+            this.delay = delay;
+        }
+        
         public void CalcNextMove()
         {
             var path = PlayerMover.Instance.PathsSoFar;
