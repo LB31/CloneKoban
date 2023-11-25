@@ -31,12 +31,13 @@ public class ManagerUI : MonoBehaviour
         RestartButton.SetActive(true);
         Audio.Play();
 
-        ActivateLevel(startIndex++);
+        ActivateLevel(startIndex);
     }
 
     public void NextLevel()
     {
-        ActivateLevel(startIndex++);
+        ActivateLevel(startIndex);
+        
     }
 
     public void Restart()
@@ -55,7 +56,13 @@ public class ManagerUI : MonoBehaviour
         }
 
         if (index != -1)
+        {
             Levels[index].SetActive(true);
+
+            Map.Map.Instance.PrepareMap(index);
+            startIndex++;
+        }
+            
     }
 
     private void OnCancel(InputValue value)

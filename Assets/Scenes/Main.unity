@@ -123,6 +123,12 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1839735485 &50938905 stripped
+Tilemap:
+  m_CorrespondingSourceObject: {fileID: 2564354819533975489, guid: 0e786bf91a753574aa1b381f30bfcab5,
+    type: 3}
+  m_PrefabInstance: {fileID: 2119530103}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &297585677
 GameObject:
   m_ObjectHideFlags: 0
@@ -489,7 +495,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c33dc580a845041a1b35b2288c371929, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  tilemap: {fileID: 0}
+  tilemaps: []
+  CurrentTilemap: 0
 --- !u!1 &511460586
 GameObject:
   m_ObjectHideFlags: 0
@@ -499,6 +506,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 511460587}
+  - component: {fileID: 511460588}
   m_Layer: 0
   m_Name: Level
   m_TagString: Untagged
@@ -526,6 +534,25 @@ Transform:
   - {fileID: 2119530104}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &511460588
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 511460586}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c33dc580a845041a1b35b2288c371929, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tilemaps:
+  - {fileID: 1738337011}
+  - {fileID: 788275920}
+  - {fileID: 2104399031}
+  - {fileID: 1113508914}
+  - {fileID: 50938905}
+  CurrentTilemap: 0
 --- !u!1001 &518515711
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -627,7 +654,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c33dc580a845041a1b35b2288c371929, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  tilemap: {fileID: 0}
+  tilemaps: []
+  CurrentTilemap: 0
 --- !u!1001 &595041367
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -781,6 +809,18 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 70e3349c7e28104419543db424597314, type: 3}
+--- !u!1839735485 &788275920 stripped
+Tilemap:
+  m_CorrespondingSourceObject: {fileID: 1054232490035757040, guid: 0e82db2269363f04db56f3edd35ad6df,
+    type: 3}
+  m_PrefabInstance: {fileID: 518515711}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1839735485 &1113508914 stripped
+Tilemap:
+  m_CorrespondingSourceObject: {fileID: 951631926864883312, guid: eb5842923a8a7ed49962ba6a040cc93e,
+    type: 3}
+  m_PrefabInstance: {fileID: 1780728651}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1438665094
 GameObject:
   m_ObjectHideFlags: 0
@@ -1144,7 +1184,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c33dc580a845041a1b35b2288c371929, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  tilemap: {fileID: 0}
+  tilemaps: []
+  CurrentTilemap: 0
 --- !u!1001 &1790045036
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1211,11 +1252,7 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 3139040693342354276, guid: 067e2e7cc200e554a8825ea37e75bebb,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1790045040}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 067e2e7cc200e554a8825ea37e75bebb, type: 3}
 --- !u!4 &1790045037 stripped
 Transform:
@@ -1229,19 +1266,12 @@ GameObject:
     type: 3}
   m_PrefabInstance: {fileID: 1790045036}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1790045040
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
+--- !u!1839735485 &2104399031 stripped
+Tilemap:
+  m_CorrespondingSourceObject: {fileID: 5757207896810281137, guid: 5953262b05a6b6045b038018f564a8c9,
+    type: 3}
+  m_PrefabInstance: {fileID: 473659025}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1790045038}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c33dc580a845041a1b35b2288c371929, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  tilemap: {fileID: 1738337011}
 --- !u!1001 &2119530103
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1343,7 +1373,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c33dc580a845041a1b35b2288c371929, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  tilemap: {fileID: 0}
+  tilemaps: []
+  CurrentTilemap: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
