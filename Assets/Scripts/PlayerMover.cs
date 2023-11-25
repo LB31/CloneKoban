@@ -21,7 +21,7 @@ public class PlayerMover : Singleton<PlayerMover>
 
     private void OnMove(InputValue inputValue)
     {
-        if (moving) return;
+        //if (moving) return;
 
         Vector2 move = inputValue.Get<Vector2>();
         Vector3 movement = Vector3.zero;

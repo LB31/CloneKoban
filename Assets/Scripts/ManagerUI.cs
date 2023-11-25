@@ -10,6 +10,7 @@ public class ManagerUI : MonoBehaviour
     public GameObject StartScreen;
     public GameObject Menu;
     public GameObject RestartButton;
+    public AudioSource Audio;
 
 
     private int startIndex = 0;
@@ -28,6 +29,7 @@ public class ManagerUI : MonoBehaviour
         StartScreen.SetActive(false);
         Menu.SetActive(false);
         RestartButton.SetActive(true);
+        Audio.Play();
 
         ActivateLevel(startIndex++);
     }

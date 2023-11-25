@@ -84,60 +84,32 @@ namespace Map
 
         private void MovePlayer(Player player, Vector3Int coordinate)
         {
-            switch (player.NextMove)
+            Vector3Int goalCoord = CalculateGoalCoordinate(player.NextMove, coordinate);
+
+            if (goalCoord != coordinate && map[goalCoord.y, goalCoord.x] == null)
             {
-                case MoveDirection.NONE:
-                    break;
+                MoveObstacle(player, coordinate, goalCoord);
+            }
+        }
+
+        private Vector3Int CalculateGoalCoordinate(MoveDirection direction, Vector3Int currentCoord)
+        {
+            switch (direction)
+            {
                 case MoveDirection.TOP:
-                    MovePlayerUp(player, coordinate);
-                    break;
+                    return new Vector3Int(currentCoord.y - 1, currentCoord.x);
                 case MoveDirection.RIGHT:
-                    MovePlayerRight(player, coordinate);
-                    break;
+                    return new Vector3Int(currentCoord.y, currentCoord.x + 1);
                 case MoveDirection.DOWN:
-                    MovePlayerDown(player, coordinate);
-                    break;
+                    return new Vector3Int(currentCoord.y + 1, currentCoord.x);
                 case MoveDirection.LEFT:
-                    MovePlayerLeft(player, coordinate);
-                    break;
+                    return new Vector3Int(currentCoord.y, currentCoord.x - 1);
+                case MoveDirection.NONE:
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    return currentCoord; // Return the original coordinate if no movement is needed
             }
         }
 
-        private void MovePlayerUp(Player player, Vector3Int coordinate)
-        {
-            var goalCoord = new Vector3Int(coordinate.y - 1, coordinate.x);
-            if (map[goalCoord.y, goalCoord.x] == null)
-            {
-                MoveObstacle(player, coordinate, goalCoord);
-            }
-        }
-
-        private void MovePlayerDown(Player player, Vector3Int coordinate)
-        {
-            var goalCoord = new Vector3Int(coordinate.y + 1, coordinate.x);
-            if (map[goalCoord.y, goalCoord.x] == null)
-            {
-                MoveObstacle(player, coordinate, goalCoord);
-            }
-        }
-        private void MovePlayerLeft(Player player, Vector3Int coordinate)
-        {
-            var goalCoord = new Vector3Int(coordinate.y, coordinate.x - 1);
-            if (map[goalCoord.y, goalCoord.x] == null)
-            {
-                MoveObstacle(player, coordinate, goalCoord);
-            }
-        }
-        private void MovePlayerRight(Player player, Vector3Int coordinate)
-        {
-            var goalCoord = new Vector3Int(coordinate.y, coordinate.x + 1);
-            if (map[goalCoord.y, goalCoord.x] == null)
-            {
-                MoveObstacle(player, coordinate, goalCoord);
-            }
-        }
 
         public void MoveObstacle(IObstacle obstacle, Vector3Int from, Vector3Int to)
         {
