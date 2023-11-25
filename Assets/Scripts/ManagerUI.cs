@@ -21,6 +21,8 @@ public class ManagerUI : MonoBehaviour
         Menu.SetActive(false);
         RestartButton.SetActive(false);
 
+        startIndex = Map.Map.Instance.CurrentTilemap;
+
         ActivateLevel(-1);
     }
 

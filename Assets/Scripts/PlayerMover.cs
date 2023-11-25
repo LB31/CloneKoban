@@ -42,10 +42,10 @@ public class PlayerMover : Singleton<PlayerMover>
         if (movement.x > 0)
             nextMove = MoveDirection.RIGHT;
         // Left
-        if (movement.x > 0)
+        if (movement.x < 0)
             nextMove = MoveDirection.LEFT;
 
-
+        Debug.Log(movement + " " + nextMove);
         PathsSoFar.Add(nextMove);
 
         foreach (Player player in AllPlayers)
