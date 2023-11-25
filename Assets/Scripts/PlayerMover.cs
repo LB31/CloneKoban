@@ -12,8 +12,6 @@ public class PlayerMover : Singleton<PlayerMover>
     public float MoveDuration = 1;
     public List<MoveDirection> PathsSoFar = new();
 
-    private bool moving;
-
     private void Start()
     {
         MapReference = Map.Map.Instance;
@@ -21,8 +19,7 @@ public class PlayerMover : Singleton<PlayerMover>
 
     private void OnMove(InputValue inputValue)
     {
-        if (moving) return;
-
+        Debug.Log("On move called!");
         Vector2 move = inputValue.Get<Vector2>();
         Vector3 movement = Vector3.zero;
 
@@ -54,26 +51,6 @@ public class PlayerMover : Singleton<PlayerMover>
         }
         MapReference.MoveAllPlayers();
         //StartCoroutine(MovePlayer(movement));
-    }
-
-    IEnumerator MovePlayer(Vector3 movement)
-    {
-        moving = true;
-        float elapsed = 0;
-
-        Vector3 startPosition = transform.position;
-        Vector3 endPosition = startPosition + movement;
-
-        while (elapsed < MoveDuration)
-        {
-            transform.position = Vector3.Lerp(startPosition, endPosition, elapsed / MoveDuration);
-            elapsed += Time.deltaTime;
-            yield return null;
-        }
-
-        transform.position = endPosition;
-
-        moving = false;
     }
 }
 

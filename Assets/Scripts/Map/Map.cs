@@ -23,6 +23,7 @@ namespace Map
 
         private void Start()
         {
+            PlayerMover.Instance.AllPlayers = new List<Player>();
             playerCoordinates = new();
             goalCoordinates = new ();
             tileLookup = new ();
