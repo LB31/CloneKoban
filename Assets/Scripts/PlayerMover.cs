@@ -1,15 +1,23 @@
+using Obstacle;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class PlayerMover : MonoBehaviour
+public class PlayerMover : Singleton<PlayerMover>
 {
-    public CharacterController CharacterController;
+    public Map.Map MapReference;
+    public List<Player> AllPlayers;
+
     public float MoveDuration = 1;
-    public Vector2 PathSoFar;
+    public List<MoveDirection> PathsSoFar = new();
 
     private bool moving;
+
+    private void Start()
+    {
+        MapReference = Map.Map.Instance;
+    }
 
     private void OnMove(InputValue inputValue)
     {
@@ -21,9 +29,24 @@ public class PlayerMover : MonoBehaviour
         if (move.x != 0)
             movement.x = move.x;
         else if (move.y != 0)
-            movement.z = move.y;
+            movement.y = move.y;
 
-        PathSoFar += new Vector2(move.x, move.y);
+        MoveDirection nextMove = MoveDirection.NONE;
+        // Top
+        if (movement.y > 0)
+            nextMove = MoveDirection.TOP;
+        // Down
+        if (movement.y < 0)
+            nextMove = MoveDirection.DOWN;
+        // Right
+        if (movement.x > 0)
+            nextMove = MoveDirection.RIGHT;
+        // Left
+        if (movement.x > 0)
+            nextMove = MoveDirection.LEFT;
+
+
+        PathsSoFar.Add(nextMove);
 
         StartCoroutine(MovePlayer(movement));
     }
@@ -47,4 +70,13 @@ public class PlayerMover : MonoBehaviour
 
         moving = false;
     }
+}
+
+public enum MoveDirection
+{
+    NONE = -1,
+    TOP = 0,
+    RIGHT = 1,
+    DOWN = 2,
+    LEFT = 3
 }

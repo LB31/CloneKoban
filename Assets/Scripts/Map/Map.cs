@@ -14,6 +14,7 @@ namespace Map
         public IObstacle[,] map;
         private Dictionary<IObstacle.Type, TileBase> tileLookup;
         
+        
         private void Awake()
         {
             Instance ??= this;
@@ -40,7 +41,9 @@ namespace Map
                             break;
                         case "Player":
                             tileLookup.TryAdd(IObstacle.Type.Player, tile);
-                            map[y, x] = new Player();
+                            Player newPlayer = new Player();
+                            map[y, x] = newPlayer;
+                            PlayerMover.Instance.AllPlayers.Add(newPlayer);
                             break;
                     }
                 }
