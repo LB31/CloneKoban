@@ -48,7 +48,11 @@ public class PlayerMover : Singleton<PlayerMover>
 
         PathsSoFar.Add(nextMove);
 
-        StartCoroutine(MovePlayer(movement));
+        foreach (var player in AllPlayers)
+        {
+            player.CalcNextMove();
+        }
+        //StartCoroutine(MovePlayer(movement));
     }
 
     IEnumerator MovePlayer(Vector3 movement)
