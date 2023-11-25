@@ -8,7 +8,8 @@ namespace Obstacle
         {
             Wall,
             Box,
-            Player
+            Player,
+            Goal
         }
 
         public abstract Type GetType();
