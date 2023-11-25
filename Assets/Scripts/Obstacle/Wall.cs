@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Obstacle
 {
-    public class Wall : MonoBehaviour, IObstacle
+    public class Wall : IObstacle
     {
         public new IObstacle.Type GetType()
         {
