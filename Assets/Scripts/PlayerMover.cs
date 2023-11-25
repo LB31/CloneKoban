@@ -7,6 +7,7 @@ public class PlayerMover : MonoBehaviour
 {
     public CharacterController CharacterController;
     public float MoveDuration = 1;
+    public Vector2 PathSoFar;
 
     private bool moving;
 
@@ -21,6 +22,8 @@ public class PlayerMover : MonoBehaviour
             movement.x = move.x;
         else if (move.y != 0)
             movement.z = move.y;
+
+        PathSoFar += new Vector2(move.x, move.y);
 
         StartCoroutine(MovePlayer(movement));
     }
