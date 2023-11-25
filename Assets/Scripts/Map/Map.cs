@@ -30,11 +30,14 @@ namespace Map
             var tileMapCoord = bounds.min;
             for(var y = 0; y < maxY; y++)
             {
-                tileMapCoord.x += 1;
-                for(var x = 0; x < maxX; x++)
+                for (var x = 0; x < maxX; x++)
                 {
                     var tile = tilemap.GetTile(tileMapCoord);
-                    if (tile == null) continue;
+                    if (tile == null)
+                    {
+                        tileMapCoord.x += 1;
+                        continue;
+                    }
                     switch (tile.name)
                     {
                         case "wall":
@@ -53,7 +56,9 @@ namespace Map
                             PlayerMover.Instance.AllPlayers.Add(newPlayer);
                             break;
                     }
+                    tileMapCoord.x += 1;
                 }
+                tileMapCoord.x = bounds.min.x;
                 tileMapCoord.y += 1;
             }
         }
