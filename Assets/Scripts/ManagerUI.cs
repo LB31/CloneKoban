@@ -38,8 +38,9 @@ public class ManagerUI : MonoBehaviour
 
     public void NextLevel()
     {
-        ActivateLevel(startIndex);
-        
+        StartGame();
+
+
     }
 
     public void Restart()
