@@ -22,10 +22,14 @@ namespace Map
         private readonly List<IObstacle[,]> history = new ();
         private int mapWidth;
         private int mapHeight;
-        
+
         private void Awake()
         {
             Instance ??= this;
+            for (var i = 0; i < transform.childCount; i ++)
+            {
+                tilemaps.Add(transform.GetChild(i).GetChild(0).GetComponent<Tilemap>());    
+            }
         }
 
         public void Reset()
@@ -91,12 +95,13 @@ namespace Map
 
         public void MoveAllPlayers()
         {
-            foreach (var pair in playerCoordinates.
+            foreach (var player in playerCoordinates.
                          Where(x => x.Key.NextMove != MoveDirection.None).
-                         OrderBy(x => x.Key.delay))
+                         OrderBy(x => x.Key.delay).
+                         Select(x => x.Key))
             {
-                Debug.Log($"Moving Player {pair.Key.Get_Name()} in Direction {pair.Key.NextMove}");
-                MovePlayer(pair.Key, pair.Value);
+                Debug.Log($"Moving Player {player.Get_Name()} in Direction {player.NextMove}");
+                MovePlayer(player, playerCoordinates[player]);
             }
             UpdateHistory();
         }
@@ -131,8 +136,8 @@ namespace Map
                 var goalTile2 = map[goalCoord2.y, goalCoord2.x];
                 if (goalTile2 != null && goalTile2.GetType() != IObstacle.Type.Goal)
                 {
-                    MoveRec(new List<(IObstacle, Vector3Int)>() { (player, coordinate) }, (goalTile, goalCoord), 1, 0,
-                        player.NextMove);
+                    MoveRec(
+                        new List<(IObstacle, Vector3Int)>() { (player, coordinate) }, (goalTile, goalCoord), 1, 0, player.NextMove);
                     return;
                 }
                 MoveObstacle(goalTile, goalCoord, goalCoord2);
@@ -196,7 +201,7 @@ namespace Map
         {
             if (force < boxCount)
                 return;
-            for (int i = 1; i < pushList.Count; i++)
+            for (var i = 1; i < pushList.Count; i++)
             {
                 MoveObstacle(pushList[^(i+1)].Item1, pushList[^(i+1)].Item2, pushList[^i].Item2);
             }

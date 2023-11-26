@@ -1,5 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using UnityEditor.Build;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
@@ -7,19 +9,24 @@ using UnityEngine.Serialization;
 
 public class ManagerUI : Singleton<ManagerUI>
 {
-    public List<GameObject> Levels = new();
     public GameObject StartScreen;
     public GameObject Menu;
     public GameObject IngameButtons;
     [SerializeField] private GameObject PauseMenu;
     public AudioSource Audio;
     [HideInInspector] public bool isPaused;
-    
     public bool IsWon { get; private set; }
     [SerializeField] private int startIndex;
-
+    private List<GameObject> levels = new ();
+    
     private void Start()
     {
+
+        for (var i = 0; i < Map.Map.Instance.transform.childCount; i++)
+        {
+            levels.Add(Map.Map.Instance.transform.GetChild(i).gameObject);
+        }
+        
         StartScreen.SetActive(true);
         Menu.SetActive(false);
         IngameButtons.SetActive(false);
@@ -52,21 +59,19 @@ public class ManagerUI : Singleton<ManagerUI>
     {
         Menu.SetActive(false);
         
-        if (Levels.Count == 0) return;
+        if (Map.Map.Instance.tilemaps.Count == 0) return;
 
-        foreach (GameObject item in Levels)
+        foreach (GameObject level in levels)
         {
-            item.SetActive(false);
+            level.SetActive(false);
         }
 
-        if (index != -1)
-        {
-            Levels[index].SetActive(true);
-            PlayerMover.Instance.Clear();
-            Map.Map.Instance.PrepareMap(index);
-            startIndex++;
-        }
-            
+        if (index < 0) return;
+        levels[index].gameObject.SetActive(true);
+        PlayerMover.Instance.Clear();
+        Map.Map.Instance.PrepareMap(index);
+        startIndex++;
+
     }
     
     public void OnWin()
@@ -93,6 +98,7 @@ public class ManagerUI : Singleton<ManagerUI>
 
     public void OnUndo()
     {
+        Debug.Log("Undo triggered!");
         PlayerMover.Instance.Undo();
     }
 }
