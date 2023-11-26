@@ -12,7 +12,7 @@ namespace Map
     public class Maps : MonoBehaviour
     {
         [HideInInspector] public List<Tilemap> tilemaps = new();
-        [FormerlySerializedAs("CurrentTilemap")] public int currentTilemap = 0;
+        [HideInInspector] public int currentTilemap = 0;
 
         public static Maps Instance { get; private set; }
         private IObstacle[,] map;
@@ -40,6 +40,9 @@ namespace Map
         {
             currentTilemap = index;
             
+            history.Clear();
+            PlayerMover.Instance.moveHistory.Clear();
+            ManagerUI.Instance.UpdateMoveText();
             PlayerMover.Instance.AllPlayers = new List<Player>();
             playerCoordinates = new Dictionary<Player, Vector3Int>();
             goalCoordinates = new Dictionary<Goal, Vector3Int>();
@@ -308,7 +311,7 @@ namespace Map
             map = history[0];
             playerCoordinates.Clear();
             history.Clear();
-            history[0] = map;
+            history.Add(map);
             var orig = tilemaps[currentTilemap].cellBounds.min;
             for (var y = 0; y < mapHeight; y++)
             {
@@ -354,6 +357,7 @@ namespace Map
             {
                 PlayerMover.Instance.AllPlayers.Add(player);
             }
+            RestoreGoals();
             return true;
         }
     }

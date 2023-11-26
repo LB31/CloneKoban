@@ -10,8 +10,7 @@ public class ManagerUI : Singleton<ManagerUI>
     public GameObject finalVictoryScreen;
     public GameObject ingameUI;
     [SerializeField] private GameObject PauseMenu;
-    public AudioSource Audio;
-    [HideInInspector] public bool isPaused;
+     public bool isPaused;
     public bool IsWon { get; private set; }
     [SerializeField] private int startIndex;
     private List<GameObject> levels = new ();
@@ -37,7 +36,6 @@ public class ManagerUI : Singleton<ManagerUI>
     {
         StartScreen.SetActive(false);
         OnLevelStart();
-        Audio.Play();
         ActivateLevel(startIndex);
     }
 

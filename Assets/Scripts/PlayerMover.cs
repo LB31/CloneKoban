@@ -1,3 +1,4 @@
+using System;
 using Obstacle;
 using System.Collections.Generic;
 using Map;
@@ -23,7 +24,52 @@ public class PlayerMover : Singleton<PlayerMover>
         AllPlayers?.Clear();
         moveHistory?.Clear();
     }
-    
+
+    public void OnUp()
+    {
+        moveHistory.Add(MoveDirection.Up);
+
+        foreach (var player in AllPlayers)
+        {
+            player.CalcNextMove();
+        }
+        mapsReference.MoveAllPlayers();
+        ManagerUI.Instance.UpdateMoveText();
+    }
+    public void OnDown()
+    {
+        moveHistory.Add(MoveDirection.Down);
+
+        foreach (var player in AllPlayers)
+        {
+            player.CalcNextMove();
+        }
+        mapsReference.MoveAllPlayers();
+        ManagerUI.Instance.UpdateMoveText();
+    }
+    public void OnLeft()
+    {
+        moveHistory.Add(MoveDirection.Left);
+
+        foreach (var player in AllPlayers)
+        {
+            player.CalcNextMove();
+        }
+        mapsReference.MoveAllPlayers();
+        ManagerUI.Instance.UpdateMoveText();
+    }
+    public void OnRight()
+    {
+        moveHistory.Add(MoveDirection.Right);
+
+        foreach (var player in AllPlayers)
+        {
+            player.CalcNextMove();
+        }
+        mapsReference.MoveAllPlayers();
+        ManagerUI.Instance.UpdateMoveText();
+    }
+
     private void OnMove(InputValue inputValue)
     {
         if (ManagerUI.Instance.IsWon || ManagerUI.Instance.isPaused)
