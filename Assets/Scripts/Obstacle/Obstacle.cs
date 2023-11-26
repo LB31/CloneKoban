@@ -1,5 +1,3 @@
-using Unity.VisualScripting;
-
 namespace Obstacle
 {
     public interface IObstacle

@@ -1,13 +1,13 @@
 using Obstacle;
-using System.Collections;
 using System.Collections.Generic;
+using Map;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Serialization;
 
 public class PlayerMover : Singleton<PlayerMover>
 {
-    public Map.Map MapReference;
+    [FormerlySerializedAs("MapReference")] public Map.Maps mapsReference;
     public List<Player> AllPlayers;
 
     public float MoveDuration = 1;
@@ -15,7 +15,7 @@ public class PlayerMover : Singleton<PlayerMover>
 
     private void Start()
     {
-        MapReference = Map.Map.Instance;
+        mapsReference = Map.Maps.Instance;
     }
 
     public void Clear()
@@ -66,7 +66,8 @@ public class PlayerMover : Singleton<PlayerMover>
         {
             player.CalcNextMove();
         }
-        MapReference.MoveAllPlayers();
+        mapsReference.MoveAllPlayers();
+        ManagerUI.Instance.UpdateMoveText();
     }
 
     public void Undo()
@@ -76,16 +77,15 @@ public class PlayerMover : Singleton<PlayerMover>
         if (moveHistory.Count == 0)
             return;
         moveHistory.RemoveAt(moveHistory.Count - 1);
-        Map.Map.Instance.UndoLastMovements();
+        Map.Maps.Instance.UndoLastMovements();
+        ManagerUI.Instance.UpdateMoveText();
     }
     
     public void UndoAllMoves()
     {
-        while (moveHistory.Count != 0)
-        {
-            moveHistory.RemoveAt(moveHistory.Count - 1);
-            Map.Map.Instance.UndoLastMovements();
-        }
+        moveHistory.Clear();
+        Maps.Instance.ResetCurrentMap();
+        ManagerUI.Instance.UpdateMoveText();
     }
 }
 

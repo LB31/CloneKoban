@@ -1,5 +1,3 @@
-using UnityEngine;
-
 namespace Obstacle
 {
     public class Box : IObstacle

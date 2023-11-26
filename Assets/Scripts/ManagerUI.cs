@@ -1,35 +1,34 @@
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using UnityEditor.Build;
+using TMPro;
 using UnityEngine;
-using UnityEngine.InputSystem;
-using UnityEngine.SceneManagement;
 using UnityEngine.Serialization;
 
 public class ManagerUI : Singleton<ManagerUI>
 {
     public GameObject StartScreen;
-    public GameObject Menu;
-    public GameObject IngameButtons;
+    [FormerlySerializedAs("Menu")] public GameObject victoryScreen;
+    public GameObject finalVictoryScreen;
+    public GameObject ingameUI;
     [SerializeField] private GameObject PauseMenu;
     public AudioSource Audio;
     [HideInInspector] public bool isPaused;
     public bool IsWon { get; private set; }
     [SerializeField] private int startIndex;
     private List<GameObject> levels = new ();
+    public TextMeshProUGUI movesText;
+    public string[] moveTextColorCodes;
     
     private void Start()
     {
 
-        for (var i = 0; i < Map.Map.Instance.transform.childCount; i++)
+        for (var i = 0; i < Map.Maps.Instance.transform.childCount; i++)
         {
-            levels.Add(Map.Map.Instance.transform.GetChild(i).gameObject);
+            levels.Add(Map.Maps.Instance.transform.GetChild(i).gameObject);
         }
         
         StartScreen.SetActive(true);
-        Menu.SetActive(false);
-        IngameButtons.SetActive(false);
+        victoryScreen.SetActive(false);
+        ingameUI.SetActive(false);
         PauseMenu.SetActive(false);
         ActivateLevel(-1);
     }
@@ -39,7 +38,6 @@ public class ManagerUI : Singleton<ManagerUI>
         StartScreen.SetActive(false);
         OnLevelStart();
         Audio.Play();
-
         ActivateLevel(startIndex);
     }
 
@@ -50,16 +48,24 @@ public class ManagerUI : Singleton<ManagerUI>
 
     public void Restart()
     {
-        Map.Map.Instance.Reset();
+        Map.Maps.Instance.Reset();
         startIndex--;
         ActivateLevel(startIndex);
     }
 
     public void ActivateLevel(int index)
     {
-        Menu.SetActive(false);
-        
-        if (Map.Map.Instance.tilemaps.Count == 0) return;
+        if (index >= levels.Count)
+        {
+            index = 0;
+            finalVictoryScreen.SetActive(false);
+        }
+        else
+        {
+            victoryScreen.SetActive(false);
+        }
+
+        if (Map.Maps.Instance.tilemaps.Count == 0) return;
 
         foreach (GameObject level in levels)
         {
@@ -69,22 +75,39 @@ public class ManagerUI : Singleton<ManagerUI>
         if (index < 0) return;
         levels[index].gameObject.SetActive(true);
         PlayerMover.Instance.Clear();
-        Map.Map.Instance.PrepareMap(index);
+        Map.Maps.Instance.PrepareMap(index);
         startIndex++;
+        if (startIndex > levels.Count)
+            startIndex = 0;
+    }
 
+    public void UpdateMoveText()
+    {
+        var moveHistory = PlayerMover.Instance.moveHistory;
+        var newText = "Previous Moves: ";
+
+        for (int i = 0; i < moveTextColorCodes.Length; i++)
+        {
+            var offset = moveTextColorCodes.Length - i;
+            newText += moveTextColorCodes[i];
+            newText += moveHistory.Count >= offset ? moveHistory[^offset] : "None";
+            if (i < moveTextColorCodes.Length - 1)
+                newText += ", ";
+        }
+        movesText.text = newText;
     }
     
     public void OnWin()
     {
-        Menu.SetActive(true);
-        IngameButtons.SetActive(false);
+        (startIndex < levels.Count ? victoryScreen : finalVictoryScreen).SetActive(true);
+        ingameUI.SetActive(false);
         IsWon = true;
     }
 
     public void OnLevelStart()
     {
-        Menu.SetActive(false);
-        IngameButtons.SetActive(true);
+        victoryScreen.SetActive(false);
+        ingameUI.SetActive(true);
         IsWon = false;
     }
 
@@ -93,6 +116,7 @@ public class ManagerUI : Singleton<ManagerUI>
         if (IsWon)
             return;
         isPaused = !isPaused;
+        ingameUI.SetActive(!isPaused);
         PauseMenu.SetActive(isPaused);
     }
 
