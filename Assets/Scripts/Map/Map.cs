@@ -19,7 +19,7 @@ namespace Map
         private Dictionary<string, TileBase> tileLookup;
         private Dictionary<Player, Vector3Int> playerCoordinates;
         private Dictionary<Goal, Vector3Int> goalCoordinates;
-        private readonly List<List<Vector3Int>> boxCoordinateHistory = new ();
+        private readonly List<IObstacle[,]> history = new ();
         private int mapWidth;
         private int mapHeight;
         
@@ -86,8 +86,7 @@ namespace Map
                 tileMapCoord.x = bounds.min.x;
                 tileMapCoord.y += 1;
             }
-            boxCoordinateHistory.Clear();
-            UpdateBoxHistory();
+            UpdateHistory();
         }
 
         public void MoveAllPlayers()
@@ -99,14 +98,28 @@ namespace Map
                 Debug.Log($"Moving Player {pair.Key.Get_Name()} in Direction {pair.Key.NextMove}");
                 MovePlayer(pair.Key, pair.Value);
             }
+            UpdateHistory();
         }
 
+        private bool CanMove(Player player, Vector3Int coordinate, MoveDirection moveDirection)
+        {
+            Vector3Int goalCoord = CalculateGoalCoordinate(moveDirection, coordinate);
+            var goalTile = map[goalCoord.y, goalCoord.x];
+            if (goalTile == null || goalTile.GetType() == IObstacle.Type.Goal)
+            {
+                return true;
+            }
+
+            if (goalTile.GetType() == IObstacle.Type.Wall) return false;
+            Vector3Int goalCoord2 = CalculateGoalCoordinate(player.NextMove, goalCoord);
+            var goalTile2 = map[goalCoord2.y, goalCoord2.x];
+            return goalTile2 == null || goalTile2.GetType() == IObstacle.Type.Goal;
+        }
+        
         private void MovePlayer(Player player, Vector3Int coordinate)
         {
             Vector3Int goalCoord = CalculateGoalCoordinate(player.NextMove, coordinate);
             var goalTile = map[goalCoord.y, goalCoord.x];
-            if (coordinate == goalCoord)
-                return;
             if (goalTile == null || goalTile.GetType() == IObstacle.Type.Goal)
             {
                 MoveObstacle(player, coordinate, goalCoord);
@@ -127,7 +140,6 @@ namespace Map
             {
                 return;
             }
-            UpdateBoxHistory();
             if (ManagerUI.Instance.IsWon)
                 return;
             if (CheckIfAllGoalsReached())
@@ -140,40 +152,6 @@ namespace Map
             }
         }
         
-        public void MoveAllPlayersReverse()
-        {
-            foreach (var pair in playerCoordinates.
-                         Where(x => x.Key.NextMove != MoveDirection.None).
-                         OrderByDescending(x => x.Key.delay))
-            {
-                Debug.Log($"Reverse Moving Player {pair.Key.Get_Name()} in Direction {pair.Key.ReverseMove}");
-                MovePlayerReverse(pair.Key, pair.Value);
-            }
-        }
-        
-        private void MovePlayerReverse(Player player, Vector3Int coordinate)
-        {
-            Vector3Int goalCoord = CalculateGoalCoordinate(player.ReverseMove, coordinate);
-            var goalTile = map[goalCoord.y, goalCoord.x];
-           
-            
-            if (goalTile == null || goalTile.GetType() == IObstacle.Type.Goal)
-            {
-                Vector3Int prevCoord = CalculateGoalCoordinate(player.NextMove, coordinate);
-                var prevTile = map[prevCoord.y, prevCoord.x];
-                if (prevTile?.GetType() == IObstacle.Type.Wall)
-                    return;
-                MoveObstacle(player, coordinate, goalCoord);
-                Debug.Log($"Successfully moved from {coordinate} to {goalCoord}.");
-            }
-            else
-            {
-                return;
-            }
-            RestoreGoals();
-            UndoLastBoxPlacements();
-        }
-
         public void MoveRec(List<IObstacle> pushList, IObstacle current, int force)
         {
             if (current.GetType() == IObstacle.Type.Player)
@@ -228,54 +206,6 @@ namespace Map
             }
         }
 
-        private void UpdateBoxHistory()
-        {
-            boxCoordinateHistory.Add(new List<Vector3Int>());
-            for (int y = 0; y < mapHeight; y++)
-            {
-                for (int x = 0; x < mapWidth; x++)
-                {
-                    if (map[y, x]?.GetType() != IObstacle.Type.Box)
-                        continue;
-                    boxCoordinateHistory[^1].Add(new Vector3Int(x, y));
-                }
-            }
-        }
-
-        private void UndoLastBoxPlacements()
-        {
-            var orig = tilemaps[currentTilemap].cellBounds.min;
-            foreach (var coordinate in boxCoordinateHistory[^1])
-            {
-                if (map[coordinate.y, coordinate.x]?.GetType() == IObstacle.Type.Box)
-                {
-                    tilemaps[currentTilemap].SetTile(orig + coordinate, null);
-                    map[coordinate.y, coordinate.x] = null;
-                }
-                else
-                    Debug.LogError($"Faulty Box history detected! There is no box at {coordinate}!");
-            }
-            foreach (var coordinate in boxCoordinateHistory[^2])
-            {
-                if (map[coordinate.y, coordinate.x] == null)
-                {
-                    tilemaps[currentTilemap].SetTile(orig + coordinate, tileLookup["box"]);
-                    map[coordinate.y, coordinate.x] = new Box();
-                }
-                else
-                    Debug.LogError($"Can't undo box placement! Tile at {coordinate} is not empty.");
-            }
-            boxCoordinateHistory.RemoveAt(boxCoordinateHistory.Count - 1);
-        }
-
-        private void CheckIfBoxInFront(Vector3Int to)
-        {
-            if(map[to.y, to.x].Equals(IObstacle.Type.Box) || map[to.y, to.x].Equals(IObstacle.Type.Player))
-            {
-                //MoveObstacle(map[to.y, to.x], );
-            }
-        }
-
         public void RestoreGoals()
         {
             var orig = tilemaps[currentTilemap].cellBounds.min;
@@ -299,6 +229,71 @@ namespace Map
                     return false;
             }
             Debug.Log("SWEET VICTORY!");
+            return true;
+        }
+
+        private IObstacle[,] GetCopy(IObstacle[,] src)
+        {
+            var copy = new IObstacle[mapHeight,mapWidth];
+
+            for (var y = 0; y < mapHeight; y++)
+            {
+                for (var x = 0; x < mapWidth; x++)
+                {
+                    switch (src[y, x]?.GetType())
+                    {
+                        case IObstacle.Type.Wall:
+                            copy[y, x] = new Wall();
+                            break;
+                        case IObstacle.Type.Box:
+                            copy[y, x] = new Box();
+                            break;
+                        case IObstacle.Type.Player:
+                            copy[y, x] = new Player(((Player) map[y, x]).delay);
+                            break;
+                        case IObstacle.Type.Goal:
+                            copy[y, x] = new Goal();
+                            break;
+                        case null:
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
+                }
+            }
+            return copy;
+        }
+        
+        private void UpdateHistory()
+        {
+            history.Add(GetCopy(map));
+        }
+        
+        public bool UndoLastMovements()
+        {
+            if (ManagerUI.Instance.IsWon || history.Count < 2)
+                return false;
+            map = history[^2];
+            playerCoordinates.Clear();
+            history.RemoveAt(history.Count - 1);
+            var orig = tilemaps[currentTilemap].cellBounds.min;
+            for (var y = 0; y < mapHeight; y++)
+            {
+                for (var x = 0; x < mapWidth; x++)
+                {
+                    if (map[y, x] is Player player)
+                    {
+                        playerCoordinates[player] = new Vector3Int(x, y);
+                    }
+                    tilemaps[currentTilemap].SetTile(orig + new Vector3Int(x, y), 
+                        map[y, x] == null ? null : tileLookup[map[y, x].Get_Name()]);
+                }
+            }
+            PlayerMover.Instance.AllPlayers.Clear();
+            foreach (var player in playerCoordinates.Keys)
+            {
+                PlayerMover.Instance.AllPlayers.Add(player);
+            }
             return true;
         }
     }

@@ -7,7 +7,6 @@ namespace Obstacle
     {
         public int delay = 1;
         public MoveDirection NextMove = MoveDirection.None;
-        public MoveDirection ReverseMove = MoveDirection.None;
         private string name = "player";
 
         public Player(int delay)
@@ -23,7 +22,6 @@ namespace Obstacle
             if (PlayerMover.Instance.moveHistory.Count < delay)
                 return;
             NextMove = PlayerMover.Instance.moveHistory[^delay];
-            ReverseMove = PlayerMover.Instance.reverseMoveHistory[^delay];
         }
         
         public new IObstacle.Type GetType()

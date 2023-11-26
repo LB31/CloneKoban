@@ -12,9 +12,6 @@ public class PlayerMover : Singleton<PlayerMover>
 
     public float MoveDuration = 1;
     [FormerlySerializedAs("PathsSoFar")] public List<MoveDirection> moveHistory = new();
-    public List<MoveDirection> reverseMoveHistory = new ();
-
-    private bool moving;
 
     private void Start()
     {
@@ -44,11 +41,9 @@ public class PlayerMover : Singleton<PlayerMover>
         {
             case < 0:
                 nextMove = MoveDirection.Down;
-                reverseMoveHistory.Add(MoveDirection.Up);
                 break;
             case > 0:
                 nextMove = MoveDirection.Up;
-                reverseMoveHistory.Add(MoveDirection.Down);
                 break;
         }
 
@@ -56,11 +51,9 @@ public class PlayerMover : Singleton<PlayerMover>
         {
             case > 0:
                 nextMove = MoveDirection.Right;
-                reverseMoveHistory.Add(MoveDirection.Left);
                 break;
             case < 0:
                 nextMove = MoveDirection.Left;
-                reverseMoveHistory.Add(MoveDirection.Right);
                 break;
         }
 
@@ -81,46 +74,15 @@ public class PlayerMover : Singleton<PlayerMover>
         Debug.Log("Undo triggered!");
         if (ManagerUI.Instance.IsWon)
             return;
-        UndoLastMove();
+        if (moveHistory.Count == 0)
+            return;
+        moveHistory.RemoveAt(moveHistory.Count - 1);
+        Map.Map.Instance.UndoLastMovements();
     }
     
-    public bool UndoLastMove()
-    {
-        if (moveHistory.Count == 0)
-            return false;
-        foreach (var player in AllPlayers)
-        {
-            player.CalcNextMove();
-        }
-        MapReference.MoveAllPlayersReverse();
-        reverseMoveHistory.RemoveAt(reverseMoveHistory.Count - 1);
-        moveHistory.RemoveAt(moveHistory.Count - 1);
-        return true;
-    }
-
     public void UndoAllMoves()
     {
-        while (UndoLastMove()) {}
-    }
-    
-    IEnumerator MovePlayer(Vector3 movement)
-    {
-        moving = true;
-        float elapsed = 0;
-
-        Vector3 startPosition = transform.position;
-        Vector3 endPosition = startPosition + movement;
-
-        while (elapsed < MoveDuration)
-        {
-            transform.position = Vector3.Lerp(startPosition, endPosition, elapsed / MoveDuration);
-            elapsed += Time.deltaTime;
-            yield return null;
-        }
-
-        transform.position = endPosition;
-
-        moving = false;
+        while (Map.Map.Instance.UndoLastMovements()) {moveHistory.RemoveAt(moveHistory.Count - 1);}
     }
 }
 
