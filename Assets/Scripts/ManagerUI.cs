@@ -16,7 +16,7 @@ public class ManagerUI : Singleton<ManagerUI>
     [HideInInspector] public bool isPaused;
     
     public bool IsWon { get; private set; }
-    private int startIndex = 0;
+    [SerializeField] private int startIndex;
 
     private void Start()
     {
@@ -24,9 +24,6 @@ public class ManagerUI : Singleton<ManagerUI>
         Menu.SetActive(false);
         IngameButtons.SetActive(false);
         PauseMenu.SetActive(false);
-
-        startIndex = Map.Map.Instance.currentTilemap;
-
         ActivateLevel(-1);
     }
 
