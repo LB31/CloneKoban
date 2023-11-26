@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Obstacle;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.Tilemaps;
 
 namespace Map
@@ -10,39 +12,44 @@ namespace Map
     public class Map : MonoBehaviour
     {
         public List<Tilemap> tilemaps = new();
-        public int CurrentTilemap = 0;
+        [FormerlySerializedAs("CurrentTilemap")] public int currentTilemap = 0;
 
         public static Map Instance { get; private set; }
-        public IObstacle[,] map;
-        private Dictionary<IObstacle.Type, TileBase> tileLookup;
+        private IObstacle[,] map;
+        private Dictionary<string, TileBase> tileLookup;
         private Dictionary<Player, Vector3Int> playerCoordinates;
         private Dictionary<Goal, Vector3Int> goalCoordinates;
-
+        private readonly List<List<Vector3Int>> boxCoordinateHistory = new ();
+        private int mapWidth;
+        private int mapHeight;
+        
         private void Awake()
         {
             Instance ??= this;
-
-            //PrepareMap(0);
         }
 
+        public void Reset()
+        {
+            PlayerMover.Instance.UndoAllMoves();
+        }
         public void PrepareMap(int index)
         {
-            CurrentTilemap = index;
-
+            currentTilemap = index;
+            
             PlayerMover.Instance.AllPlayers = new List<Player>();
-            playerCoordinates = new();
-            goalCoordinates = new ();
-            tileLookup = new ();
-            var bounds = tilemaps[CurrentTilemap].cellBounds;
-            int maxX = bounds.min.x < 0 ? bounds.max.x + Math.Abs(bounds.min.x) : bounds.max.x - bounds.min.x;
-            int maxY = bounds.min.y < 0 ? bounds.max.y + Math.Abs(bounds.min.y) : bounds.max.y - bounds.min.y;
-            map = new IObstacle[maxY, maxX];
+            playerCoordinates = new Dictionary<Player, Vector3Int>();
+            goalCoordinates = new Dictionary<Goal, Vector3Int>();
+            tileLookup = new Dictionary<string, TileBase>();
+            var bounds = tilemaps[currentTilemap].cellBounds;
+            mapWidth = bounds.min.x < 0 ? bounds.max.x + Math.Abs(bounds.min.x) : bounds.max.x - bounds.min.x;
+            mapHeight= bounds.min.y < 0 ? bounds.max.y + Math.Abs(bounds.min.y) : bounds.max.y - bounds.min.y;
+            map = new IObstacle[mapHeight, mapWidth];
             Vector3Int tileMapCoord = bounds.min;
-            for (int y = 0; y < maxY; y++)
+            for (int y = 0; y < mapHeight; y++)
             {
-                for (int x = 0; x < maxX; x++) 
+                for (int x = 0; x < mapWidth; x++) 
                 {
-                    var tile = tilemaps[CurrentTilemap].GetTile(tileMapCoord);
+                    var tile = tilemaps[currentTilemap].GetTile(tileMapCoord);
                     if (tile == null)
                     {
                         tileMapCoord.x += 1;
@@ -53,25 +60,25 @@ namespace Map
                     switch (args[0])
                     {
                         case "wall":
-                            tileLookup.TryAdd(IObstacle.Type.Wall, tile);
+                            tileLookup.TryAdd("wall", tile);
                             map[y, x] = new Wall();
                             break;
                         case "box":
-                            tileLookup.TryAdd(IObstacle.Type.Box, tile);
+                            tileLookup.TryAdd("box", tile);
                             map[y, x] = new Box();
                             break;
                         case "goal":
-                            tileLookup.TryAdd(IObstacle.Type.Goal, tile);
+                            tileLookup.TryAdd("goal", tile);
                             Goal goal = new Goal();
                             map[y, x] = goal;
                             goalCoordinates.Add(goal, new Vector3Int(x, y));
                             break;
                         case "player":
-                            tileLookup.TryAdd(IObstacle.Type.Player, tile);
                             Player newPlayer = new Player(args.Length == 3 ? int.Parse(args[2]) + 1 : 1);
                             map[y, x] = newPlayer;
                             playerCoordinates.Add(newPlayer, new Vector3Int(x, y));
                             PlayerMover.Instance.AllPlayers.Add(newPlayer);
+                            tileLookup.TryAdd(newPlayer.Get_Name(), tile);
                             break;
                     }
                     tileMapCoord.x += 1;
@@ -79,21 +86,18 @@ namespace Map
                 tileMapCoord.x = bounds.min.x;
                 tileMapCoord.y += 1;
             }
+            boxCoordinateHistory.Clear();
+            UpdateBoxHistory();
         }
 
         public void MoveAllPlayers()
         {
-            
-            var temp = new Dictionary<Player, Vector3Int>();
-            
-            foreach (var playerCoordinate in playerCoordinates)
+            foreach (var pair in playerCoordinates.
+                         Where(x => x.Key.NextMove != MoveDirection.None).
+                         OrderBy(x => x.Key.delay))
             {
-               temp.Add(playerCoordinate.Key, playerCoordinate.Value);
-            }
-
-            foreach (var t in temp)
-            {
-                MovePlayer(t.Key, t.Value);
+                Debug.Log($"Moving Player {pair.Key.Get_Name()} in Direction {pair.Key.NextMove}");
+                MovePlayer(pair.Key, pair.Value);
             }
         }
 
@@ -106,6 +110,7 @@ namespace Map
             if (goalTile == null || goalTile.GetType() == IObstacle.Type.Goal)
             {
                 MoveObstacle(player, coordinate, goalCoord);
+                Debug.Log($"Successfully moved from {coordinate} to {goalCoord}.");
             } 
             else if (goalTile.GetType() != IObstacle.Type.Wall)
             {
@@ -115,9 +120,59 @@ namespace Map
                     return;//MoveRec(new List<IObstacle>(){player}, goalTile, 1);
                 MoveObstacle(goalTile, goalCoord, goalCoord2);
                 MoveObstacle(player, coordinate, goalCoord);
+                Debug.Log($"Successfully moved box from {goalCoord} to {goalCoord2}.");
+                Debug.Log($"Successfully moved from {coordinate} to {goalCoord}.");
+            }
+            else
+            {
+                return;
+            }
+            UpdateBoxHistory();
+            if (ManagerUI.Instance.IsWon)
+                return;
+            if (CheckIfAllGoalsReached())
+            {
+              ManagerUI.Instance.OnWin();
+            }
+            else
+            {
+                RestoreGoals();
             }
         }
-
+        
+        public void MoveAllPlayersReverse()
+        {
+            foreach (var pair in playerCoordinates.
+                         Where(x => x.Key.NextMove != MoveDirection.None).
+                         OrderByDescending(x => x.Key.delay))
+            {
+                Debug.Log($"Reverse Moving Player {pair.Key.Get_Name()} in Direction {pair.Key.ReverseMove}");
+                MovePlayerReverse(pair.Key, pair.Value);
+            }
+        }
+        
+        private void MovePlayerReverse(Player player, Vector3Int coordinate)
+        {
+            Vector3Int goalCoord = CalculateGoalCoordinate(player.ReverseMove, coordinate);
+            var goalTile = map[goalCoord.y, goalCoord.x];
+           
+            
+            if (goalTile == null || goalTile.GetType() == IObstacle.Type.Goal)
+            {
+                Vector3Int prevCoord = CalculateGoalCoordinate(player.NextMove, coordinate);
+                var prevTile = map[prevCoord.y, prevCoord.x];
+                if (prevTile?.GetType() == IObstacle.Type.Wall)
+                    return;
+                MoveObstacle(player, coordinate, goalCoord);
+                Debug.Log($"Successfully moved from {coordinate} to {goalCoord}.");
+            }
+            else
+            {
+                return;
+            }
+            RestoreGoals();
+            UndoLastBoxPlacements();
+        }
 
         public void MoveRec(List<IObstacle> pushList, IObstacle current, int force)
         {
@@ -145,15 +200,15 @@ namespace Map
         {
             switch (direction)
             {
-                case MoveDirection.TOP:
-                    return new Vector3Int(currentCoord.x, currentCoord.y - 1);
-                case MoveDirection.RIGHT:
-                    return new Vector3Int(currentCoord.x + 1, currentCoord.y);
-                case MoveDirection.DOWN:
+                case MoveDirection.Up:
                     return new Vector3Int(currentCoord.x, currentCoord.y + 1);
-                case MoveDirection.LEFT:
+                case MoveDirection.Right:
+                    return new Vector3Int(currentCoord.x + 1, currentCoord.y);
+                case MoveDirection.Down:
+                    return new Vector3Int(currentCoord.x, currentCoord.y - 1);
+                case MoveDirection.Left:
                     return new Vector3Int(currentCoord.x - 1, currentCoord.y);
-                case MoveDirection.NONE:
+                case MoveDirection.None:
                 default:
                     return currentCoord; // Return the original coordinate if no movement is needed
             }
@@ -162,26 +217,56 @@ namespace Map
 
         public void MoveObstacle(IObstacle obstacle, Vector3Int from, Vector3Int to)
         {
-            var orig = tilemaps[CurrentTilemap].cellBounds.min;
+            var orig = tilemaps[currentTilemap].cellBounds.min;
             map[from.y, from.x] = null;
             map[to.y, to.x] = obstacle;
-            tilemaps[CurrentTilemap].SetTile(orig + from, null); 
-            tilemaps[CurrentTilemap].SetTile(orig + to, tileLookup[obstacle.GetType()]);
+            tilemaps[currentTilemap].SetTile(orig + from, null); 
+            tilemaps[currentTilemap].SetTile(orig + to, tileLookup[obstacle.Get_Name()]);
             if (obstacle is Player player)
             {
                 playerCoordinates[player] = to;
             }
+        }
 
-            if (CheckIfAllGoalsReached())
+        private void UpdateBoxHistory()
+        {
+            boxCoordinateHistory.Add(new List<Vector3Int>());
+            for (int y = 0; y < mapHeight; y++)
             {
-                FindObjectOfType<ManagerUI>().OnCancel(null);
-            }
-            else
-            {
-                RestoreGoals();
+                for (int x = 0; x < mapWidth; x++)
+                {
+                    if (map[y, x]?.GetType() != IObstacle.Type.Box)
+                        continue;
+                    boxCoordinateHistory[^1].Add(new Vector3Int(x, y));
+                }
             }
         }
-        
+
+        private void UndoLastBoxPlacements()
+        {
+            var orig = tilemaps[currentTilemap].cellBounds.min;
+            foreach (var coordinate in boxCoordinateHistory[^1])
+            {
+                if (map[coordinate.y, coordinate.x]?.GetType() == IObstacle.Type.Box)
+                {
+                    tilemaps[currentTilemap].SetTile(orig + coordinate, null);
+                    map[coordinate.y, coordinate.x] = null;
+                }
+                else
+                    Debug.LogError($"Faulty Box history detected! There is no box at {coordinate}!");
+            }
+            foreach (var coordinate in boxCoordinateHistory[^2])
+            {
+                if (map[coordinate.y, coordinate.x] == null)
+                {
+                    tilemaps[currentTilemap].SetTile(orig + coordinate, tileLookup["box"]);
+                    map[coordinate.y, coordinate.x] = new Box();
+                }
+                else
+                    Debug.LogError($"Can't undo box placement! Tile at {coordinate} is not empty.");
+            }
+            boxCoordinateHistory.RemoveAt(boxCoordinateHistory.Count - 1);
+        }
 
         private void CheckIfBoxInFront(Vector3Int to)
         {
@@ -193,13 +278,13 @@ namespace Map
 
         public void RestoreGoals()
         {
-            var orig = tilemaps[CurrentTilemap].cellBounds.min;
+            var orig = tilemaps[currentTilemap].cellBounds.min;
             foreach (var goal in goalCoordinates)
             {
                 var temp = orig + goal.Value;
-                if (tilemaps[CurrentTilemap].GetTile(temp) == null)
+                if (tilemaps[currentTilemap].GetTile(temp) == null)
                 {
-                    tilemaps[CurrentTilemap].SetTile(temp, tileLookup[IObstacle.Type.Goal]);
+                    tilemaps[currentTilemap].SetTile(temp, tileLookup["goal"]);
                 }
             }
         }

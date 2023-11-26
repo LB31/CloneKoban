@@ -13,5 +13,6 @@ namespace Obstacle
         }
 
         public abstract Type GetType();
+        public abstract string Get_Name();
     }
 }

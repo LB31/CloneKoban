@@ -8,5 +8,10 @@ namespace Obstacle
         {
             return IObstacle.Type.Wall;
         }
+
+        public string Get_Name()
+        {
+            return "wall";
+        }
     }
 }

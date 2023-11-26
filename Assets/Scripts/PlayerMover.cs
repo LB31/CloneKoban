@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Serialization;
 
 public class PlayerMover : Singleton<PlayerMover>
 {
@@ -10,7 +11,8 @@ public class PlayerMover : Singleton<PlayerMover>
     public List<Player> AllPlayers;
 
     public float MoveDuration = 1;
-    public List<MoveDirection> PathsSoFar = new();
+    [FormerlySerializedAs("PathsSoFar")] public List<MoveDirection> moveHistory = new();
+    public List<MoveDirection> reverseMoveHistory = new ();
 
     private bool moving;
 
@@ -19,45 +21,88 @@ public class PlayerMover : Singleton<PlayerMover>
         MapReference = Map.Map.Instance;
     }
 
+    public void Clear()
+    {
+        AllPlayers?.Clear();
+        moveHistory?.Clear();
+    }
+    
     private void OnMove(InputValue inputValue)
     {
-        //if (moving) return;
-
-        Vector2 move = inputValue.Get<Vector2>();
-        Vector3 movement = Vector3.zero;
+        if (ManagerUI.Instance.IsWon)
+            return;
+        var move = inputValue.Get<Vector2>();
+        var movement = Vector3.zero;
 
         if (move.x != 0)
             movement.x = move.x;
         else if (move.y != 0)
             movement.y = move.y;
 
-        MoveDirection nextMove = MoveDirection.NONE;
-        // Top
-        if (movement.y > 0)
-            nextMove = MoveDirection.DOWN;
-        // Down
-        if (movement.y < 0)
-            nextMove = MoveDirection.TOP;
-        // Right
-        if (movement.x > 0)
-            nextMove = MoveDirection.RIGHT;
-        // Left
-        if (movement.x < 0)
-            nextMove = MoveDirection.LEFT;
+        var nextMove = MoveDirection.None;
+        switch (movement.y)
+        {
+            case < 0:
+                nextMove = MoveDirection.Down;
+                reverseMoveHistory.Add(MoveDirection.Up);
+                break;
+            case > 0:
+                nextMove = MoveDirection.Up;
+                reverseMoveHistory.Add(MoveDirection.Down);
+                break;
+        }
 
-        if (nextMove == MoveDirection.NONE) return;
+        switch (movement.x)
+        {
+            case > 0:
+                nextMove = MoveDirection.Right;
+                reverseMoveHistory.Add(MoveDirection.Left);
+                break;
+            case < 0:
+                nextMove = MoveDirection.Left;
+                reverseMoveHistory.Add(MoveDirection.Right);
+                break;
+        }
+
+        if (nextMove == MoveDirection.None) return;
         Debug.Log(movement + " " + nextMove);
         
-        PathsSoFar.Add(nextMove);
+        moveHistory.Add(nextMove);
 
-        foreach (Player player in AllPlayers)
+        foreach (var player in AllPlayers)
         {
             player.CalcNextMove();
         }
         MapReference.MoveAllPlayers();
-        //StartCoroutine(MovePlayer(movement));
     }
 
+    public void OnUndo()
+    {
+        Debug.Log("Undo triggered!");
+        if (ManagerUI.Instance.IsWon)
+            return;
+        UndoLastMove();
+    }
+    
+    public bool UndoLastMove()
+    {
+        if (moveHistory.Count == 0)
+            return false;
+        foreach (var player in AllPlayers)
+        {
+            player.CalcNextMove();
+        }
+        MapReference.MoveAllPlayersReverse();
+        reverseMoveHistory.RemoveAt(reverseMoveHistory.Count - 1);
+        moveHistory.RemoveAt(moveHistory.Count - 1);
+        return true;
+    }
+
+    public void UndoAllMoves()
+    {
+        while (UndoLastMove()) {}
+    }
+    
     IEnumerator MovePlayer(Vector3 movement)
     {
         moving = true;
@@ -81,9 +126,9 @@ public class PlayerMover : Singleton<PlayerMover>
 
 public enum MoveDirection
 {
-    NONE = -1,
-    TOP = 0,
-    RIGHT = 1,
-    DOWN = 2,
-    LEFT = 3
+    None = -1,
+    Up = 0,
+    Right = 1,
+    Down = 2,
+    Left = 3
 }

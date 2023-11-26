@@ -8,5 +8,10 @@ namespace Obstacle
         {
             return IObstacle.Type.Goal;
         }
+
+        public string Get_Name()
+        {
+            return "goal";
+        }
     }
 }

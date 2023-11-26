@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 
-public class ManagerUI : MonoBehaviour
+public class ManagerUI : Singleton<ManagerUI>
 {
     public List<GameObject> Levels = new();
     public GameObject StartScreen;
@@ -12,7 +12,7 @@ public class ManagerUI : MonoBehaviour
     public GameObject RestartButton;
     public AudioSource Audio;
 
-
+    public bool IsWon { get; private set; }
     private int startIndex = 0;
 
     private void Start()
@@ -21,7 +21,7 @@ public class ManagerUI : MonoBehaviour
         Menu.SetActive(false);
         RestartButton.SetActive(false);
 
-        startIndex = Map.Map.Instance.CurrentTilemap;
+        startIndex = Map.Map.Instance.currentTilemap;
 
         ActivateLevel(-1);
     }
@@ -29,8 +29,7 @@ public class ManagerUI : MonoBehaviour
     public void StartGame()
     {
         StartScreen.SetActive(false);
-        Menu.SetActive(false);
-        RestartButton.SetActive(true);
+        OnLevelStart();
         Audio.Play();
 
         ActivateLevel(startIndex);
@@ -39,20 +38,20 @@ public class ManagerUI : MonoBehaviour
     public void NextLevel()
     {
         StartGame();
-
-
     }
 
     public void Restart()
     {
-        Scene currentScene = SceneManager.GetActiveScene();
-        SceneManager.LoadScene(currentScene.name);
+        Map.Map.Instance.Reset();
+        startIndex--;
+        ActivateLevel(startIndex);
     }
 
     public void ActivateLevel(int index)
     {
         Menu.SetActive(false);
         RestartButton.SetActive(true);
+        
         if (Levels.Count == 0) return;
 
         foreach (GameObject item in Levels)
@@ -63,16 +62,24 @@ public class ManagerUI : MonoBehaviour
         if (index != -1)
         {
             Levels[index].SetActive(true);
-
+            PlayerMover.Instance.Clear();
             Map.Map.Instance.PrepareMap(index);
             startIndex++;
         }
             
     }
-
-    public void OnCancel(InputValue value)
+    
+    public void OnWin()
     {
-        Menu.SetActive(!Menu.activeSelf);
-        RestartButton.SetActive(!Menu.activeSelf);
+        Menu.SetActive(true);
+        RestartButton.SetActive(false);
+        IsWon = true;
+    }
+
+    public void OnLevelStart()
+    {
+        Menu.SetActive(false);
+        RestartButton.SetActive(true);
+        IsWon = false;
     }
 }
