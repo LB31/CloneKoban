@@ -5,7 +5,7 @@ namespace Obstacle
     public class Player : IObstacle
     {
         public int delay = 1;
-        public MoveDirection NextMove;
+        public MoveDirection NextMove = MoveDirection.NONE;
 
         public Player(int delay)
         {
@@ -15,7 +15,7 @@ namespace Obstacle
         public void CalcNextMove()
         {
             var path = PlayerMover.Instance.PathsSoFar;
-            if (path.Count <= delay)
+            if (path.Count < delay)
                 return;
             NextMove = path[^delay];
         }

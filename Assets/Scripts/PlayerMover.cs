@@ -34,10 +34,10 @@ public class PlayerMover : Singleton<PlayerMover>
         MoveDirection nextMove = MoveDirection.NONE;
         // Top
         if (movement.y > 0)
-            nextMove = MoveDirection.TOP;
+            nextMove = MoveDirection.DOWN;
         // Down
         if (movement.y < 0)
-            nextMove = MoveDirection.DOWN;
+            nextMove = MoveDirection.TOP;
         // Right
         if (movement.x > 0)
             nextMove = MoveDirection.RIGHT;

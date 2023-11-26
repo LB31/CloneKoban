@@ -50,6 +50,8 @@ public class ManagerUI : MonoBehaviour
 
     public void ActivateLevel(int index)
     {
+        Menu.SetActive(false);
+        RestartButton.SetActive(true);
         if (Levels.Count == 0) return;
 
         foreach (GameObject item in Levels)
@@ -67,7 +69,7 @@ public class ManagerUI : MonoBehaviour
             
     }
 
-    private void OnCancel(InputValue value)
+    public void OnCancel(InputValue value)
     {
         Menu.SetActive(!Menu.activeSelf);
         RestartButton.SetActive(!Menu.activeSelf);
