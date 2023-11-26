@@ -3,15 +3,18 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
+using UnityEngine.Serialization;
 
 public class ManagerUI : Singleton<ManagerUI>
 {
     public List<GameObject> Levels = new();
     public GameObject StartScreen;
     public GameObject Menu;
-    public GameObject RestartButton;
+    public GameObject IngameButtons;
+    [SerializeField] private GameObject PauseMenu;
     public AudioSource Audio;
-
+    [HideInInspector] public bool isPaused;
+    
     public bool IsWon { get; private set; }
     private int startIndex = 0;
 
@@ -19,7 +22,8 @@ public class ManagerUI : Singleton<ManagerUI>
     {
         StartScreen.SetActive(true);
         Menu.SetActive(false);
-        RestartButton.SetActive(false);
+        IngameButtons.SetActive(false);
+        PauseMenu.SetActive(false);
 
         startIndex = Map.Map.Instance.currentTilemap;
 
@@ -50,7 +54,6 @@ public class ManagerUI : Singleton<ManagerUI>
     public void ActivateLevel(int index)
     {
         Menu.SetActive(false);
-        RestartButton.SetActive(true);
         
         if (Levels.Count == 0) return;
 
@@ -72,14 +75,27 @@ public class ManagerUI : Singleton<ManagerUI>
     public void OnWin()
     {
         Menu.SetActive(true);
-        RestartButton.SetActive(false);
+        IngameButtons.SetActive(false);
         IsWon = true;
     }
 
     public void OnLevelStart()
     {
         Menu.SetActive(false);
-        RestartButton.SetActive(true);
+        IngameButtons.SetActive(true);
         IsWon = false;
+    }
+
+    public void OnCancel()
+    {
+        if (IsWon)
+            return;
+        isPaused = !isPaused;
+        PauseMenu.SetActive(isPaused);
+    }
+
+    public void OnUndo()
+    {
+        PlayerMover.Instance.Undo();
     }
 }

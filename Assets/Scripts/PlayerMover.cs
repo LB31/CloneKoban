@@ -26,7 +26,7 @@ public class PlayerMover : Singleton<PlayerMover>
     
     private void OnMove(InputValue inputValue)
     {
-        if (ManagerUI.Instance.IsWon)
+        if (ManagerUI.Instance.IsWon || ManagerUI.Instance.isPaused)
             return;
         var move = inputValue.Get<Vector2>();
         var movement = Vector3.zero;
@@ -69,9 +69,8 @@ public class PlayerMover : Singleton<PlayerMover>
         MapReference.MoveAllPlayers();
     }
 
-    public void OnUndo()
+    public void Undo()
     {
-        Debug.Log("Undo triggered!");
         if (ManagerUI.Instance.IsWon)
             return;
         if (moveHistory.Count == 0)
@@ -82,7 +81,11 @@ public class PlayerMover : Singleton<PlayerMover>
     
     public void UndoAllMoves()
     {
-        while (Map.Map.Instance.UndoLastMovements()) {moveHistory.RemoveAt(moveHistory.Count - 1);}
+        while (moveHistory.Count != 0)
+        {
+            moveHistory.RemoveAt(moveHistory.Count - 1);
+            Map.Map.Instance.UndoLastMovements();
+        }
     }
 }
 

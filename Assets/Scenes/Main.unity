@@ -496,7 +496,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   tilemaps: []
-  CurrentTilemap: 0
+  currentTilemap: 0
 --- !u!1 &511460586
 GameObject:
   m_ObjectHideFlags: 0
@@ -552,7 +552,7 @@ MonoBehaviour:
   - {fileID: 2104399031}
   - {fileID: 1113508914}
   - {fileID: 50938905}
-  CurrentTilemap: 0
+  currentTilemap: 0
 --- !u!1001 &518515711
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -655,38 +655,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   tilemaps: []
-  CurrentTilemap: 0
---- !u!1 &544643497
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 544643498}
-  m_Layer: 0
-  m_Name: test
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &544643498
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 544643497}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -5.119999, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  currentTilemap: 0
 --- !u!1001 &595041367
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -700,11 +669,6 @@ PrefabInstance:
       propertyPath: Audio
       value: 
       objectReference: {fileID: 452220914}
-    - target: {fileID: 1045166932132597735, guid: 70e3349c7e28104419543db424597314,
-        type: 3}
-      propertyPath: Levels.Array.size
-      value: 5
-      objectReference: {fileID: 0}
     - target: {fileID: 1045166932132597735, guid: 70e3349c7e28104419543db424597314,
         type: 3}
       propertyPath: Levels.Array.data[0]
@@ -884,7 +848,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   MapReference: {fileID: 0}
   MoveDuration: 1
-  PathsSoFar: 
+  moveHistory: 
 --- !u!114 &1438665096
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1216,7 +1180,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   tilemaps: []
-  CurrentTilemap: 0
+  currentTilemap: 0
 --- !u!1001 &1790045036
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1229,6 +1193,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Level01
+      objectReference: {fileID: 0}
+    - target: {fileID: 3139040693342354276, guid: 067e2e7cc200e554a8825ea37e75bebb,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3657813398240316075, guid: 067e2e7cc200e554a8825ea37e75bebb,
         type: 3}
@@ -1405,7 +1374,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   tilemaps: []
-  CurrentTilemap: 0
+  currentTilemap: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -1416,4 +1385,3 @@ SceneRoots:
   - {fileID: 595041367}
   - {fileID: 452220915}
   - {fileID: 511460587}
-  - {fileID: 544643498}
