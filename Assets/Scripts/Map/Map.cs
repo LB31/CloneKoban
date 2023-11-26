@@ -101,15 +101,18 @@ namespace Map
         {
             Vector3Int goalCoord = CalculateGoalCoordinate(player.NextMove, coordinate);
             var goalTile = map[goalCoord.y, goalCoord.x];
-            if (goalCoord != coordinate && (goalTile == null || goalTile.GetType() == IObstacle.Type.Goal))
+            if (coordinate == goalCoord)
+                return;
+            if (goalTile == null || goalTile.GetType() == IObstacle.Type.Goal)
             {
                 MoveObstacle(player, coordinate, goalCoord);
-            } else if (goalTile.GetType() != IObstacle.Type.Wall)
+            } 
+            else if (goalTile.GetType() != IObstacle.Type.Wall)
             {
                 Vector3Int goalCoord2 = CalculateGoalCoordinate(player.NextMove, goalCoord);
                 var goalTile2 = map[goalCoord2.y, goalCoord2.x];
                 if (goalTile2 != null && goalTile2.GetType() != IObstacle.Type.Goal)
-                    MoveRec(new List<IObstacle>(){player}, goalTile, 1);
+                    return;//MoveRec(new List<IObstacle>(){player}, goalTile, 1);
                 MoveObstacle(goalTile, goalCoord, goalCoord2);
                 MoveObstacle(player, coordinate, goalCoord);
             }
@@ -135,6 +138,7 @@ namespace Map
                 pushList.Add(current);
                 MoveRec(pushList,  goalTile, force + 1);
             }
+            
         }
 
         private Vector3Int CalculateGoalCoordinate(MoveDirection direction, Vector3Int currentCoord)
